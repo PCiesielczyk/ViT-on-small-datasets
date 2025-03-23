@@ -6,6 +6,7 @@ import os
 from torch import optim, nn
 import torch.backends.cudnn as cudnn
 import torch.nn.functional as F
+import csv
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', default='vit')
@@ -116,16 +117,33 @@ def main(args):
         test_loss_history = checkpoint['test_loss']
         test_accuracy_history = checkpoint['accuracy']
 
+    metrics = {"examples_seen": 0, "total_time": 0, "img_per_sec": 0, "core_hours": 0}
+
     print('==> Training starts')
     for epoch in range(start_epoch, args.epochs + 1):
         start_time = time.time()
         print('Epoch:', epoch)
         train_epoch(model, device, optimizer, criterion,
-                    train_loader, train_loss_history)
+                    train_loader, train_loss_history, metrics)
         evaluate_model(model, device, test_loader, test_loss_history,
                        test_accuracy_history)
-        print('Epoch took:', '{:5.2f}'.format(
-            time.time() - start_time), 'seconds')
+
+        epoch_time = time.time() - start_time
+
+        print(f"Epoch took: {epoch_time:.2f} seconds")
+        print(f"Images/sec/core: {metrics['img_per_sec'] / torch.get_num_threads():.2f}")
+        print(f"Examples seen so far: {metrics['examples_seen']}")
+        print(f"Core hours used: {metrics['core_hours']:.4f} h")
+
+        with open("training_metrics.csv", mode="a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([
+                epoch,
+                metrics["examples_seen"],
+                metrics["img_per_sec"] / torch.get_num_threads(),
+                metrics["core_hours"],
+                epoch_time
+            ])
 
         if epoch % args.checkpoint == 0:
             torch.save({
@@ -139,11 +157,17 @@ def main(args):
             print(f"Checkpoint {args.dataset}_e{epoch}_b{args.train_batch}_lr{args.lr}.pt saved")
 
 
-def train_epoch(model, device, optimizer, criterion, data_loader, loss_history):
+def train_epoch(model, device, optimizer, criterion, data_loader, loss_history, metrics):
     total_samples = len(data_loader.dataset)
     model.train()
 
+    start_time = time.perf_counter()
+    examples_seen = 0
+
     for i, (data, target) in enumerate(data_loader):
+        batch_size = data.size(0)
+        examples_seen += batch_size
+
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
@@ -152,10 +176,19 @@ def train_epoch(model, device, optimizer, criterion, data_loader, loss_history):
         optimizer.step()
 
         if i % 100 == 0:
+            elapsed_time = time.perf_counter() - start_time
+            img_per_sec = examples_seen / elapsed_time
+
             print('['+'{:5}'.format(i * len(data)) + '/' + '{:5}'.format(total_samples) +
                   ' (' + '{:3.0f}'.format(100 * i / len(data_loader)) + '%)]  Loss: ' +
-                  '{:6.4f}'.format(loss.item()))
+                  '{:6.4f}'.format(loss.item()) + ', Img/sec: {:.2f}'.format(img_per_sec))
             loss_history = np.append(loss_history, loss.item())
+
+    epoch_time = time.perf_counter() - start_time
+    metrics["examples_seen"] += examples_seen
+    metrics["total_time"] += epoch_time
+    metrics["img_per_sec"] = metrics["examples_seen"] / metrics["total_time"]
+    metrics["core_hours"] = (metrics["total_time"] * torch.get_num_threads()) / 3600
 
 
 def evaluate_model(model, device, data_loader, loss_history, accuracy_history):
