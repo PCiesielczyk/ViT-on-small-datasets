@@ -134,7 +134,7 @@ def main(args):
         print(f"Images/sec/core: {metrics['img_per_sec'] / torch.get_num_threads():.2f}")
         print(f"Examples seen so far: {metrics['examples_seen']}")
         print(f"Core hours used: {metrics['core_hours']:.4f} h")
-        print(f"Accuracy: {metrics['accuracy']:.4f} %")
+        print(f"Accuracy: {metrics['accuracy']:.4f}")
 
         with open("training_metrics.csv", mode="a", newline="") as file:
             writer = csv.writer(file)
@@ -147,7 +147,7 @@ def main(args):
                 metrics["accuracy"]
             ])
 
-        if epoch % args.checkpoint == 0:
+        if epoch % args.checkpoint == 0 or epoch == args.epochs:
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
