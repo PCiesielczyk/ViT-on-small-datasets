@@ -15,7 +15,7 @@ from utils import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--image_idx', default=2)
-parser.add_argument('--dataset', type=str, default="SHVN")
+parser.add_argument('--dataset', type=str, default="SVHN")
 parser.add_argument('--load_checkpoint', type=str, default="../checkpoint/res18_svhn-4-ckpt.t7")
 
 FLAGS = parser.parse_args()
@@ -52,7 +52,7 @@ def main(args):
         patch_size = 7
         num_classes = 10
 
-    elif args.dataset == "SHVN":
+    elif args.dataset == "SVHN":
         image_size = 32
         patch_size = 4
         num_class = 10

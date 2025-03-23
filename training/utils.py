@@ -149,14 +149,17 @@ def get_data_loader(args, train_kwargs, test_kwargs):
         train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
         test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
-    elif args.dataset == "SHVN":
+    elif args.dataset == "SVHN":
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ])
         trainset = datasets.SVHN(root='./data', split='train', download=True, transform=transform)
+        extraset = datasets.SVHN(root='./data', split='extra', download=True, transform=transform)
+        combined_trainset = torch.utils.data.ConcatDataset([trainset, extraset])
+
         testset = datasets.SVHN(root='./data', split='test', download=True, transform=transform)
-        train_loader = torch.utils.data.DataLoader(trainset, **test_kwargs)
+        train_loader = torch.utils.data.DataLoader(combined_trainset, **test_kwargs)
         test_loader = torch.utils.data.DataLoader(testset, **train_kwargs)
 
     return train_loader, test_loader

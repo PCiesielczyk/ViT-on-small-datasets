@@ -20,7 +20,7 @@ def main(args):
     use_cuda = torch.cuda.is_available()
     torch.manual_seed(42)
     device = torch.device("cuda" if use_cuda else "cpu")
-    print(f"Running on device: {torch.cuda.get_device_name(0)}")
+    print(f"Running on device: {device}")
 
     print(f"Your torch version is {torch.__version__}")
     train_kwargs = {'batch_size': 10}

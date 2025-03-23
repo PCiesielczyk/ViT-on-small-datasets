@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', default='vit')
-parser.add_argument('--dataset', type=str, default="SHVN")
+parser.add_argument('--dataset', type=str, default="SVHN")
 # --transform=RandomAffine for random translate
 parser.add_argument('--transform', type=str, default="None")
 parser.add_argument('--epochs', type=int, default=200)
@@ -39,7 +39,7 @@ def main(args):
     torch.manual_seed(42)
     device = torch.device("cuda" if use_cuda else "cpu")
     print("device is:", device)
-    print(f"Running on device: {torch.cuda.get_device_name(0)}")
+    print(f"Running on device: {device}")
     # Parameters
     train_kwargs = {'batch_size': args.train_batch, 'shuffle': True}
     test_kwargs = {'batch_size': args.test_batch, 'shuffle': True}
@@ -77,7 +77,7 @@ def main(args):
         image_size = 224
         patch_size = 56
         num_classes = 1000
-    elif args.dataset == "SHVN":
+    elif args.dataset == "SVHN":
         image_size = 32
         patch_size = 4
         num_classes = 10

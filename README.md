@@ -12,7 +12,7 @@ Then, download the trained checkpoints from our [huggingface repo](https://huggi
 ### Visualize Layers as in Section 4
 Run ./training/vis_vit.py and vis_resnet.py. Please make sure you open the files and set the args parser parameters correct. Below we provide the exact code to reproduce Figures in Section 4: <br />
 ```
-python vis_vit.py --image_idx=2 --dataset="SVHN" --load_checkpoint="../checkpoint/vit_SHVN_e100_b10_lr0.0001.pt" 
+python vis_vit.py --image_idx=2 --dataset="SVHN" --load_checkpoint="../checkpoint/vit_SVHN_e100_b10_lr0.0001.pt" 
 ```
 ```
 python vis_vit.py --image_idx=10 --dataset="CIFAR-10" --load_checkpoint="../checkpoint/vit_CIFAR-10_e500_b100_lr0.0001.pt"
