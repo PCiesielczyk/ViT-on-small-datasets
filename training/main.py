@@ -126,7 +126,7 @@ def main(args):
         train_epoch(model, device, optimizer, criterion,
                     train_loader, train_loss_history, metrics)
         evaluate_model(model, device, test_loader, test_loss_history,
-                       test_accuracy_history)
+                       test_accuracy_history, metrics)
 
         epoch_time = time.time() - start_time
 
@@ -134,6 +134,7 @@ def main(args):
         print(f"Images/sec/core: {metrics['img_per_sec'] / torch.get_num_threads():.2f}")
         print(f"Examples seen so far: {metrics['examples_seen']}")
         print(f"Core hours used: {metrics['core_hours']:.4f} h")
+        print(f"Accuracy: {metrics['accuracy']:.4f} %")
 
         with open("training_metrics.csv", mode="a", newline="") as file:
             writer = csv.writer(file)
@@ -142,7 +143,8 @@ def main(args):
                 metrics["examples_seen"],
                 metrics["img_per_sec"] / torch.get_num_threads(),
                 metrics["core_hours"],
-                epoch_time
+                epoch_time,
+                metrics["accuracy"]
             ])
 
         if epoch % args.checkpoint == 0:
@@ -191,7 +193,7 @@ def train_epoch(model, device, optimizer, criterion, data_loader, loss_history, 
     metrics["core_hours"] = (metrics["total_time"] * torch.get_num_threads()) / 3600
 
 
-def evaluate_model(model, device, data_loader, loss_history, accuracy_history):
+def evaluate_model(model, device, data_loader, loss_history, accuracy_history, metrics):
     model.eval()
     total_samples = len(data_loader.dataset)
     correct_samples = 0
@@ -210,6 +212,7 @@ def evaluate_model(model, device, data_loader, loss_history, accuracy_history):
     loss_history = np.append(loss_history, avg_loss)
     accuracy = correct_samples / total_samples
     accuracy_history = np.append(accuracy_history, accuracy)
+    metrics["accuracy"] = accuracy
     print('\nAverage test loss: ' + '{:.4f}'.format(avg_loss) +
           '  Accuracy:' + '{:5}'.format(correct_samples) + '/' +
           '{:5}'.format(total_samples) + ' (' +
