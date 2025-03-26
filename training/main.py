@@ -136,6 +136,10 @@ def main(args):
         print(f"Core hours used: {metrics['core_hours']:.4f} h")
         print(f"Accuracy: {metrics['accuracy']:.4f}")
 
+        print(f"DEBUG: train_loss_history: {train_loss_history}")
+        print(f"DEBUG: test_loss_history: {test_loss_history}")
+        print(f"DEBUG: test_accuracy_history: {test_accuracy_history}")
+
         with open("training_metrics.csv", mode="a", newline="") as file:
             writer = csv.writer(file)
             writer.writerow([
