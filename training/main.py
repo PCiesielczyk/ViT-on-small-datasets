@@ -123,9 +123,9 @@ def main(args):
     for epoch in range(start_epoch, args.epochs + 1):
         start_time = time.time()
         print('Epoch:', epoch)
-        train_epoch(model, device, optimizer, criterion,
+        train_loss_history = train_epoch(model, device, optimizer, criterion,
                     train_loader, train_loss_history, metrics)
-        evaluate_model(model, device, test_loader, test_loss_history,
+        test_loss_history, test_accuracy_history = evaluate_model(model, device, test_loader, test_loss_history,
                        test_accuracy_history, metrics)
 
         epoch_time = time.time() - start_time
@@ -196,6 +196,8 @@ def train_epoch(model, device, optimizer, criterion, data_loader, loss_history, 
     metrics["img_per_sec"] = metrics["examples_seen"] / metrics["total_time"]
     metrics["core_hours"] = (metrics["total_time"] * torch.get_num_threads()) / 3600
 
+    return loss_history
+
 
 def evaluate_model(model, device, data_loader, loss_history, accuracy_history, metrics):
     model.eval()
@@ -221,6 +223,8 @@ def evaluate_model(model, device, data_loader, loss_history, accuracy_history, m
           '  Accuracy:' + '{:5}'.format(correct_samples) + '/' +
           '{:5}'.format(total_samples) + ' (' +
           '{:4.2f}'.format(100.0 * correct_samples / total_samples) + '%)\n')
+
+    return loss_history, accuracy_history
 
 
 if __name__ == "__main__":
